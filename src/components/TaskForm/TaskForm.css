@@ -1,0 +1,10 @@
+.card_header {
+    display: inline-block;
+}
+.card_header-icon {
+    float: right;
+}
+.card_header-icon:hover {
+    cursor: pointer;
+    color: red;
+}
