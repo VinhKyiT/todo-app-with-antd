@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Col, Row, Table, Tag } from 'antd';
+import { Button, Col, Row, Space, Table, Tag } from 'antd';
 
 function TaskList(props) {
-    let { tasks } = props;
+    let { tasks, onDeleteClick, onEditClick, onStatusClick } = props;
 
     const columns = [
         {
@@ -14,6 +14,7 @@ function TaskList(props) {
             title: 'Tên',
             dataIndex: 'name',
             key: 'name',
+            sorter: (a, b) => a.name.localeCompare(b.name)
         },
         {
             title: 'Trạng thái',
@@ -32,17 +33,21 @@ function TaskList(props) {
             key: task.id,
             stt: index + 1,
             name: task.name,
-            status: task.status ? <Tag color="green">Hoàn thành</Tag> : <Tag color="volcano">Ẩn</Tag>,
-            action: <Button type="primary" shape="round">Thêm</Button>
+            status: task.status ? <Tag style={{ cursor: "pointer" }} color="#87d068" onClick={() => onStatusClick(task.id)}>Hoàn thành</Tag> :
+                <Tag style={{ cursor: "pointer" }} onClick={() => onStatusClick(task.id)} color="#f50">Ẩn</Tag>,
+            action:
+                <Space>
+                    <Button type="primary" shape="round" onClick={() => onEditClick(task.id)}>Sửa</Button>
+                    <Button htmlType="reset" type="danger" shape="round" onClick={() => onDeleteClick(task.id)}>Xoá</Button>
+                </Space>
         }
     ))
-    console.log(data)
 
     return (
         <>
             <Row>
                 <Col span={24}>
-                    <Table columns={columns} dataSource={data} bordered tableLayout="fixed" />
+                    <Table columns={columns} dataSource={data} pagination={{ pageSize: 7 }} bordered tableLayout="fixed" />
                 </Col>
             </Row>
         </>

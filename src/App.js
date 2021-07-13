@@ -1,4 +1,4 @@
-import { Button, Layout, Space, Row, Col } from "antd";
+import { Button, Layout, Row, Col } from "antd";
 import TaskForm from './components/TaskForm'
 import NavbarComp from './components/Navbar'
 import TaskSearchControl from "./components/TaskSearchControl";
@@ -14,6 +14,7 @@ function App() {
 
   const [tasks, setTasks] = useState([]);
   const [isDisplayForm, setIsDisplayForm] = useState(false);
+  const [formValue, setFormValue] = useState({});
 
   useEffect(() => {
     if (localStorage && localStorage.getItem("tasks")) {
@@ -37,30 +38,6 @@ function App() {
     return str;
   }
 
-  function onGenerate() {
-    let tasks = [
-      {
-        id: randomstring(5),
-        name: 'Học lập trình',
-        status: true,
-      },
-      {
-        id: randomstring(5),
-        name: 'Đi bơi',
-        status: false,
-      },
-      {
-        id: randomstring(5),
-        name: 'Ngủ',
-        status: true,
-      }
-    ];
-    setTasks({
-      tasks
-    });
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }
-
   function handleToggleForm() {
     setIsDisplayForm(!isDisplayForm);
   }
@@ -69,20 +46,58 @@ function App() {
     setIsDisplayForm(false);
   }
 
+  const onSubmitData = (data) => {
+    let taskToUpdate = tasks.findIndex(item => item.id === data.id)
+    if (taskToUpdate !== -1) {
+      let newTasks = tasks.map(task => {
+        if (task.id === data.id) {
+          task.status = data.status;
+          task.name = data.content;
+        }
+        return task;
+      });
+      setTasks(newTasks);
+      localStorage.setItem('tasks', JSON.stringify(newTasks));
+    } else {
+      let newTaskList = [{ id: randomstring(5), name: data.content, status: data.status }, ...tasks];
+      setTasks(newTaskList);
+      localStorage.setItem('tasks', JSON.stringify(newTaskList));
+    }
+  }
+
+  function onDeleteClick(id) {
+    let newTasks = tasks.filter(task => task.id !== id);
+    setTasks(newTasks);
+    localStorage.setItem('tasks', JSON.stringify(newTasks));
+  }
+
+  const onEditClick = (id) => {
+    setFormValue(tasks.find(task => task.id === id));
+    setIsDisplayForm(true);
+  }
+
+  const onStatusClick = (id) => {
+    let newTasks = tasks.map(task => {
+      if (task.id === id) {
+        task.status = !task.status;
+      }
+      return task;
+    });
+    setTasks(newTasks);
+    localStorage.setItem('tasks', JSON.stringify(newTasks));
+  }
+
   return (
     <>
       <NavbarComp />
       <Content className="mt-3 content">
         <Row gutter="16">
           <Col span={6}>
-            {isDisplayForm ? <TaskForm onCloseForm={onCloseForm} /> : ''}
+            {isDisplayForm ? <TaskForm onCloseForm={onCloseForm} formValue={formValue} onSubmitData={onSubmitData} /> : ''}
           </Col>
           <Col span={isDisplayForm ? '18' : '24'}>
             <Row className="mb-2">
-              <Space>
-                <Button type="primary" onClick={handleToggleForm} shape="round"><FaPlusCircle /> Thêm công việc</Button>
-                <Button type="ghost" className="ms-3" onClick={onGenerate} shape="round">Generate</Button>
-              </Space>
+              <Button type="primary" onClick={handleToggleForm} shape="round"><FaPlusCircle /> Thêm công việc</Button>
             </Row>
             <Row gutter="16">
               <Col span={12}>
@@ -93,7 +108,11 @@ function App() {
               </Col>
             </Row>
             <Row className="mt-3">
-              <TaskList tasks={tasks} />
+              <TaskList tasks={tasks}
+                onDeleteClick={onDeleteClick}
+                onEditClick={onEditClick}
+                onStatusClick={onStatusClick}
+              />
             </Row>
           </Col>
         </Row>
